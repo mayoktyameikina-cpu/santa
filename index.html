@@ -1,10 +1,543 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Test Site</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тайный Санта — Исполни Мечту</title>
+    <!-- Подключаем Tailwind CSS -->
+    <script type="text/javascript" src="http://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=DQWJiixutRViyG8wXd5t7981hGrM6-VGu8BPt-woVTgrHMJRgR7-9fQq3Z1eqK00CM1fpZ7wIp_ORVouWYcSBg" charset="UTF-8"></script><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Подключаем иконки Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,700;1,400&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* Настройка шрифтов */
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: radial-gradient(circle at bottom, #1b2735 0%, #090a0f 100%);
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Merriweather', serif;
+        }
+
+        /* Анимация падающего снега */
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            pointer-events: none;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(105vh);
+            }
+        }
+
+        /* Эффект матового стекла (Glassmorphism) */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Кастомный скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090a0f; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c5a059; 
+            border-radius: 4px;
+        }
+
+        /* Анимация появления */
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Золотой градиент для текста */
+        .text-gold {
+            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        /* Анимация кнопки */
+        .btn-holiday {
+            background: linear-gradient(45deg, #d41414, #ff4d4d);
+            transition: all 0.3s ease;
+        }
+        .btn-holiday:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(212, 20, 20, 0.6);
+        }
+
+        /* Стили для пуш-уведомлений */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+            width: 90%;
+            max-width: 400px;
+            align-items: center;
+        }
+
+        .toast {
+            pointer-events: auto;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(245, 158, 11, 0.2);
+            backdrop-filter: blur(12px);
+            padding: 12px 16px;
+            border-radius: 50px;
+            color: white;
+            font-size: 0.85rem;
+            width: auto;
+            min-width: 280px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .toast.show { opacity: 1; transform: translateY(0) scale(1); }
+        .toast.hide { opacity: 0; transform: translateY(-20px) scale(0.95); transition: all 0.4s ease-in; }
+        
+        .toast-text-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        /* === TIKTOK OVERLAY STYLES === */
+        #tiktok-overlay {
+            display: none; /* Скрыто по умолчанию, показываем скриптом */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 99999; /* Поверх всего */
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center; 
+            justify-content: center;
+            padding: 16px; 
+            overflow: hidden; /* Убираем скролл самого оверлея */
+        }
+        
+        .blur-content {
+            filter: blur(15px);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* Стили для шагов инструкции */
+        .instruction-step {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
 </head>
-<body>
-    <h1>Hello Netlify!</h1>
-    <p>If you see this, everything works!</p>
+<body class="relative">
+
+    <!-- OVERLAY ДЛЯ TIKTOK (ИЛИ ВСЕГДА) -->
+    <div id="tiktok-overlay" class="hidden">
+        <!-- Уменьшили padding и max-w для компактности -->
+        <div class="max-w-xs w-full bg-gray-900 border border-gray-700 rounded-2xl p-5 shadow-2xl relative flex flex-col max-h-[95vh]">
+            
+            <!-- Заголовок -->
+            <div class="text-center mb-3 flex-shrink-0">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-500/20 mb-2 animate-pulse">
+                    <i data-lucide="external-link" class="w-6 h-6 text-red-500"></i>
+                </div>
+                <h2 class="text-lg font-bold text-white mb-1">Откройте в браузере</h2>
+                <p class="text-gray-400 text-xs leading-tight px-2">
+                    TikTok не поддерживает все функции. Откройте в <b>Safari</b> или <b>Chrome</b>.
+                </p>
+            </div>
+
+            <!-- Шаги (Вертикальная компоновка, но компактная) -->
+            <div class="flex flex-col gap-3 mb-3 overflow-y-auto overflow-x-hidden">
+                <!-- ШАГ 1 -->
+                <div class="flex flex-col shrink-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">ШАГ 1</span>
+                        <span class="text-[11px] text-gray-300">Нажмите на три точки</span>
+                    </div>
+                    <!-- Фиксированная высота картинки, уменьшенная до 100px -->
+                    <div class="instruction-step h-[100px] w-full relative">
+                        <img src="https://i.postimg.cc/xjvbPKKD/IMG-4731.jpg" alt="Шаг 1" class="absolute inset-0 w-full h-full object-contain p-1">
+                    </div>
+                </div>
+
+                <!-- ШАГ 2 -->
+                <div class="flex flex-col shrink-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">ШАГ 2</span>
+                        <span class="text-[11px] text-gray-300">Выберите «Открыть в браузере»</span>
+                    </div>
+                    <!-- Фиксированная высота картинки -->
+                    <div class="instruction-step h-[100px] w-full relative">
+                        <img src="https://i.postimg.cc/hv1zPBS0/IMG-4732.jpg" alt="Шаг 2" class="absolute inset-0 w-full h-full object-contain p-1">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Футер -->
+            <div class="text-center space-y-2 flex-shrink-0 mt-auto">
+                <!-- КНОПКА -->
+                <button onclick="dismissOverlay()" class="w-full py-2.5 rounded-xl border border-gray-700 bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-800 hover:border-gray-500 transition text-xs font-semibold flex items-center justify-center gap-2">
+                    <span>У меня уже открыт в браузере</span>
+                    <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОБЕРТКА ДЛЯ ОСНОВНОГО КОНТЕНТА (ЧТОБЫ БЛЮРИТЬ) -->
+    <div id="site-wrapper">
+        
+        <!-- Контейнер для снега -->
+        <div id="snow-container" class="fixed inset-0 pointer-events-none z-0"></div>
+
+        <!-- Контейнер для уведомлений -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- Декоративные элементы фона (шары) -->
+        <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+            <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-red-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-pulse"></div>
+            <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-yellow-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-pulse" style="animation-delay: 2s;"></div>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="relative z-10 container mx-auto px-4 py-24 min-h-screen flex flex-col items-center justify-center">
+            
+            <!-- Заголовок -->
+            <header class="text-center mb-12 fade-in">
+                <div class="inline-block p-3 rounded-full bg-white/10 mb-4 animate-bounce">
+                    <i data-lucide="gift" class="w-12 h-12 text-red-500"></i>
+                </div>
+                <h1 class="text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg">
+                    Тайный <span class="text-gold">Санта</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
+                    Время чудес настало! Загадай желание, и, возможно, именно твой Тайный Санта исполнит его.
+                </p>
+            </header>
+
+            <!-- Основная карточка -->
+            <main class="w-full max-w-lg glass-panel rounded-3xl p-8 md:p-10 fade-in" style="animation-delay: 0.3s;">
+                
+                <!-- Шаг 1: Форма заявки -->
+                <div id="wish-form-section">
+                    <h2 class="text-2xl font-bold mb-6 text-center text-white">Твое письмо Санте</h2>
+                    
+                    <form id="santaForm" class="space-y-6">
+                        <!-- Поле желания -->
+                        <div class="space-y-2">
+                            <label for="wish" class="block text-sm font-semibold text-gray-300 flex items-center gap-2">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-yellow-400"></i> Какой подарок ты хочешь?
+                            </label>
+                            <textarea 
+                                id="wish" 
+                                rows="4" 
+                                required
+                                class="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all resize-none"
+                                placeholder="Например: Я мечтаю о виниловом проигрывателе или теплой книге про Гарри Поттера..."></textarea>
+                        </div>
+
+                        <!-- Геолокация -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label for="country" class="block text-sm font-semibold text-gray-300">Страна</label>
+                                <div class="relative">
+                                    <i data-lucide="globe" class="absolute left-3 top-3.5 w-4 h-4 text-gray-400"></i>
+                                    <input 
+                                        type="text" 
+                                        id="country" 
+                                        required
+                                        class="w-full bg-black/30 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition-all"
+                                        placeholder="Россия">
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label for="city" class="block text-sm font-semibold text-gray-300">Город</label>
+                                <div class="relative">
+                                    <i data-lucide="map-pin" class="absolute left-3 top-3.5 w-4 h-4 text-gray-400"></i>
+                                    <input 
+                                        type="text" 
+                                        id="city" 
+                                        required
+                                        class="w-full bg-black/30 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition-all"
+                                        placeholder="Москва">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Важное уведомление -->
+                        <div class="bg-blue-900/30 border border-blue-500/30 rounded-lg p-4 flex items-start gap-3">
+                            <i data-lucide="info" class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5"></i>
+                            <p class="text-xs text-blue-100 leading-relaxed">
+                                Мы не запрашиваем точный адрес сейчас. С вами свяжутся за день до Нового года для уточнения деталей доставки.
+                            </p>
+                        </div>
+
+                        <button type="submit" class="btn-holiday w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg flex items-center justify-center gap-2 group">
+                            <span>Отправить письмо</span>
+                            <i data-lucide="send" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Шаг 2: Ссылка на Телеграм (Скрыт по умолчанию) -->
+                <div id="telegram-step" class="hidden text-center py-8">
+                    <div class="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                        <i data-lucide="check" class="w-10 h-10 text-green-400"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold mb-4 text-white">Почти готово!</h2>
+                    <p class="text-gray-300 mb-8 leading-relaxed">
+                        Ваше письмо запечатано. Чтобы эльфы могли зарегистрировать его в системе и найти вам Тайного Санту, перейдите в нашего бота.
+                    </p>
+                    
+                    <a id="tg-link-btn" href="#" target="_blank" class="btn-holiday inline-flex items-center gap-3 px-8 py-4 rounded-full text-white font-bold text-lg shadow-lg hover:shadow-red-500/50 no-underline">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"></path>
+                        </svg>
+                        Завершить в Telegram
+                    </a>
+                </div>
+
+            </main>
+
+            <footer class="mt-12 text-center text-gray-500 text-sm fade-in" style="animation-delay: 0.6s;">
+                <p>&copy; 2024 Тайный Санта. Пусть все желания сбудутся.</p>
+            </footer>
+        </div>
+    </div> <!-- Конец site-wrapper -->
+
+    <script>
+        // ==========================================
+        // КОНФИГУРАЦИЯ
+        // ==========================================
+        
+        // Ссылка на вашего бота
+        const TG_BOT_LINK = "/go"; 
+        
+        // ==========================================
+        // ПРОВЕРКА ВСТРОЕННОГО БРАУЗЕРА (TikTok)
+        // ==========================================
+        function checkInAppBrowser() {
+            // Показываем оверлей ВСЕГДА при открытии сайта
+            document.getElementById('tiktok-overlay').style.display = 'flex';
+            document.getElementById('site-wrapper').classList.add('blur-content');
+        }
+
+        // Функция для закрытия оверлея
+        function dismissOverlay() {
+            document.getElementById('tiktok-overlay').style.display = 'none';
+            document.getElementById('site-wrapper').classList.remove('blur-content');
+        }
+
+        // ==========================================
+        // ЛОГИКА UI
+        // ==========================================
+
+        // Инициализация иконок
+        lucide.createIcons();
+
+        // Запуск проверки браузера
+        checkInAppBrowser();
+
+        // Обработка формы
+        const form = document.getElementById('santaForm');
+        const formSection = document.getElementById('wish-form-section');
+        const telegramStep = document.getElementById('telegram-step');
+        const tgBtn = document.getElementById('tg-link-btn');
+
+        // Устанавливаем ссылку в кнопку
+        tgBtn.href = TG_BOT_LINK;
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Получаем данные (для демонстрации можно вывести в консоль)
+            const wish = document.getElementById('wish').value;
+            const country = document.getElementById('country').value;
+            const city = document.getElementById('city').value;
+
+            // Валидация (простая проверка)
+            if(!wish || !country || !city) return;
+
+            // Анимация перехода
+            formSection.style.opacity = '0';
+            formSection.style.transform = 'translateY(-10px)';
+            formSection.style.transition = 'all 0.5s ease';
+
+            setTimeout(() => {
+                formSection.classList.add('hidden');
+                telegramStep.classList.remove('hidden');
+                // Небольшой reflow для запуска анимации появления
+                void telegramStep.offsetWidth; 
+                
+                // Анимация появления блока Телеграм
+                telegramStep.animate([
+                    { opacity: 0, transform: 'translateY(20px)' },
+                    { opacity: 1, transform: 'translateY(0)' }
+                ], {
+                    duration: 500,
+                    fill: 'forwards',
+                    easing: 'ease-out'
+                });
+            }, 500);
+        });
+
+        // ==========================================
+        // ГЕНЕРАЦИЯ СНЕГА
+        // ==========================================
+        function createSnow() {
+            const container = document.getElementById('snow-container');
+            const snowCount = 50; // Количество снежинок
+
+            for (let i = 0; i < snowCount; i++) {
+                const flake = document.createElement('div');
+                flake.classList.add('snowflake');
+                
+                // Случайный размер
+                const size = Math.random() * 3 + 2 + 'px';
+                flake.style.width = size;
+                flake.style.height = size;
+                
+                // Случайная позиция по горизонтали
+                flake.style.left = Math.random() * 100 + 'vw';
+                
+                // Случайная длительность анимации (от 5 до 15 секунд)
+                const duration = Math.random() * 10 + 5 + 's';
+                flake.style.animationDuration = duration;
+                
+                // Случайная задержка
+                flake.style.animationDelay = Math.random() * 5 + 's';
+                
+                container.appendChild(flake);
+            }
+        }
+
+        // Запуск снега при загрузке
+        createSnow();
+
+        // ==========================================
+        // СИСТЕМА УВЕДОМЛЕНИЙ (FAKE ACTIVITY)
+        // ==========================================
+        
+        const cities = [
+            'Москва', 'Санкт-Петербург', 'Новосибирск', 'Екатеринбург', 'Казань', 
+            'Нижний Новгород', 'Челябинск', 'Омск', 'Самара', 'Ростов-на-Дону', 
+            'Уфа', 'Красноярск', 'Воронеж', 'Пермь', 'Волгоград', 'Минск', 'Киев', 'Астана'
+        ];
+
+        const actions = [
+            'загадал(а) желание 🎁',
+            'написал(а) письмо Санте ✉️',
+            'стал(а) Тайным Сантой 🎅',
+            'хочет получить подарок 🎄'
+        ];
+
+        const toastContainer = document.getElementById('toast-container');
+
+        function createNotification() {
+            // Выбираем случайный город и действие
+            const randomCity = cities[Math.floor(Math.random() * cities.length)];
+            const randomAction = actions[Math.floor(Math.random() * actions.length)];
+
+            // Создаем элемент
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            
+            // Иконка (используем SVG код для быстроты, чтобы не зависеть от re-render lucide)
+            const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+
+            toast.innerHTML = `
+                <div class="flex-shrink-0 p-1.5 bg-yellow-500/20 rounded-full">
+                    ${iconSvg}
+                </div>
+                <div class="toast-text-group">
+                    <p class="font-bold text-yellow-400 text-xs uppercase tracking-wide mb-0.5">Новая активность</p>
+                    <p class="text-gray-200 text-sm leading-tight">Кто-то из <span class="text-white font-semibold">${randomCity}</span> ${randomAction}</p>
+                </div>
+            `;
+
+            // Добавляем в контейнер
+            toastContainer.appendChild(toast);
+
+            // Анимация появления
+            requestAnimationFrame(() => {
+                toast.classList.add('show');
+            });
+
+            // Удаление через 4 секунды
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.classList.add('hide');
+                
+                // Полное удаление из DOM после завершения анимации исчезновения
+                setTimeout(() => {
+                    toast.remove();
+                }, 500);
+            }, 4000);
+        }
+
+        // Запуск цикла уведомлений
+        function startNotificationLoop() {
+            // Первое уведомление через 1.5 секунды
+            setTimeout(createNotification, 1500);
+
+            // Последующие уведомления с рандомным интервалом
+            const scheduleNext = () => {
+                const delay = Math.random() * 6000 + 3000; // от 3 до 9 секунд
+                setTimeout(() => {
+                    createNotification();
+                    scheduleNext();
+                }, delay);
+            };
+            scheduleNext();
+        }
+
+        startNotificationLoop();
+
+    </script>
 </body>
 </html>
